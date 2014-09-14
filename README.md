@@ -38,3 +38,8 @@ ToDo
 * Ver.2
     * これ
     * まだぜんぜんできてない
+
+Copyright
+---------
+
+Copyright © SATO Taisuke <<paina@paina.jp>> 2014
