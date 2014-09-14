@@ -1,0 +1,32 @@
+{
+  "Dhcp6": {
+    "lease-database": {
+      "type": "memfile",
+      "persist": true,
+      "name": "${prefix}/var/db/leases.csv"
+    },
+    "interfaces": [
+
+    ],
+    "preferred-lifetime": 3000,
+    "valid-lifetime": 4000,
+    "renew-timer": 1000,
+    "rebind-timer": 2000,
+    "subnet6": [
+    ]
+  },
+  "Logging": {
+    "loggers": [
+      {
+        "name": "kea",
+        "output_options": [
+          {
+            "output": "${prefix}/var/log/kea.log"
+          }
+        ],
+        "severity": "INFO",
+        "debuglevel": 0
+      }
+    ]
+  }
+}

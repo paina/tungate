@@ -1,0 +1,139 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+AC_CONF_PATH = '/opt/ac/etc/ac.conf'
+
+##### methods
+def err(mesg, exit_code=1)
+  warn mesg
+  exit exit_code
+end
+
+def load_json(path)
+  begin
+    json = open(path).read
+    obj = JSON.parse(json)
+  rescue
+    err "Cannot parse JSON"
+  end
+
+  return obj
+end
+
+def gen_kea_conf(ifaces)
+  kea_subnet6 = []
+  kea_interfaces = []
+ 
+  ifaces.each { |i|
+    begin
+      authname = authname_from_iface(i)
+      kea_interfaces.push(i)
+    rescue => e
+      warn e.message
+      next
+    end
+
+    unless client = @ac_conf["clients"][authname]
+      warn "No such authname in ac config."
+      next
+    else
+      ia_type = client["ia_type"]
+      if ia_type == "pd"
+        prefixlen = client["prefixlen"] || 64
+      elsif ia_type == "na"
+        # do nothing
+      else
+        warn "ia_type is not pd or na."
+        next
+      end
+      unless ip6addr = client["ip6addr"]
+        warn "no ip6addr specified"
+        next
+      end
+    end
+ 
+    e = {}
+    e["subnet"] = @ac_conf["net"]["subnet"]
+    e["pools"] = [ { "pool" => "#{ip6addr}-#{ip6addr}" } ]
+    e["interface"] = i
+
+    kea_subnet6.push(e)
+  }
+
+  kea_conf = @kea_conf_template
+  kea_conf["Dhcp6"]["interfaces"] = kea_interfaces
+  kea_conf["Dhcp6"]["subnet6"] = kea_subnet6
+
+  return kea_conf
+end
+
+def get_active_ifaces()
+  ifaces = []
+
+  wd = Dir::pwd
+  Dir::chdir(IFDB_DIR)
+  Dir::glob("#{IFDB_PREFIX}*").each { |f|
+    f =~ /^#{IFDB_PREFIX}(.*)/
+    ifaces.push $1
+  }
+  Dir::chdir(wd)
+
+  return ifaces
+end
+
+def iface_entry_path(iface)
+  return IFDB_DIR + '/' + IFDB_PREFIX + iface
+end
+
+def new_ifdb_entry(iface, authname)
+  File.write(iface_entry_path(iface), authname)
+end
+
+def authname_from_iface(iface)
+  begin
+    p = iface_entry_path(iface)
+    authname = open(p).read
+  rescue
+    raise "Cannot get authname of #{iface}."
+  end
+  authname = authname.lstrip.rstrip
+
+  return authname
+end
+
+def update_kea_conf(kea_conf)
+  config_path = @ac_conf["kea"]["config_path"]
+
+  File.open(config_path, File::RDWR) {|f|
+    f.flock(File::LOCK_EX)
+    f.rewind
+    f.write(JSON.pretty_generate(kea_conf))
+    f.flush
+    f.truncate(f.pos)
+  }
+end
+
+####
+
+iface = ARGV[0]
+authname = ARGV[4]
+
+unless iface && authname
+  err "Argument error."
+end
+
+
+@ac_conf = load_json(AC_CONF_PATH)
+@kea_conf_template = load_json(@ac_conf["kea"]["config_template_path"])
+
+IFDB_DIR = @ac_conf["ifdb"]["dir"]
+IFDB_PREFIX = @ac_conf["ifdb"]["prefix"]
+
+new_ifdb_entry(iface, authname)
+
+ifaces =  get_active_ifaces
+
+kea_conf = gen_kea_conf(ifaces)
+
+#update_kea_conf(kea_conf)
