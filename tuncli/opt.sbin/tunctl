@@ -1,0 +1,10 @@
+#!/bin/sh
+
+case "$1" in
+    connect)
+        echo "c L2TP1" > /var/run/xl2tpd/l2tp-control
+        ;;
+    disconnect)
+        echo "d L2TP1" > /var/run/xl2tpd/l2tp-control
+	;;
+esac

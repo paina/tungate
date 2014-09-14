@@ -1,0 +1,64 @@
+#!/bin/sh
+
+IFCONFIG=/sbin/ifconfig
+SERVICE=/sbin/service
+TUNCTL=/opt/sbin/tunctl
+IFNAME=ppp0
+MAILTO="paina@wide.ad.jp \
+	mitsugi@sfc.wide.ad.jp \
+	sat3@mag.keio.ac.jp \
+	spike@sfc.wide.ad.jp \
+	dokan@sfc.wide.ad.jp \
+	ichiro@sfc.wide.ad.jp"
+
+check_if() {
+	echo -n "Interface ($IFNAME): "
+	IFCOUNT=`$IFCONFIG | grep $IFNAME | wc -l`
+	if [ $IFCOUNT -eq 1 ]; then
+		echo "Found"
+	else
+		echo "Error"
+		ERROR_FLAG=1
+		MESG="${MESG}Interface Not Found. "
+	fi
+}
+
+check_addr() {
+	echo -n "IPv6 Address: "
+	ADDRCOUNT=`$IFCONFIG $IFNAME | grep 'Scope:Global' | wc -l`
+	if [ $ADDRCOUNT -eq 1 ]; then
+		echo "Found"
+	else
+		echo "Error"
+		ERROR_FLAG=1
+		MESG="${MESG}IPv6 Address Not Found. "
+	fi
+}
+
+reconnect() {
+	echo "Reconnecting L2TP tunnel..."
+	
+	$TUNCTL disconnect
+	sleep 3
+	$SERVICE xl2tpd restart
+	sleep 30
+	$TUNCTL connect
+	sleep 3
+}
+
+notify() {
+	echo $MESG | mail -s "$HOSTNAME L2TP reconnection" $MAILTO
+}
+
+ERROR_FLAG=0
+MESG=""
+
+check_if
+check_addr
+
+if [ $ERROR_FLAG -eq 0 ]; then
+	echo "Do nothing."
+else
+	notify
+	reconnect
+fi

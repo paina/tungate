@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/opt/sbin/dhcp6c-init stop
+/opt/sbin/dhcp6c-init start
+ip -6 route add default dev ppp0
