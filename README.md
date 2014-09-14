@@ -43,3 +43,11 @@ Copyright
 ---------
 
 Copyright © SATO Taisuke <<paina@paina.jp>> 2014
+
+License is not fixed yet...
+
+This software has not been not completed. If you want reuse it nevertheless, please contact me. It's very very welcomed.
+
+ライセンスはまだ確定していません。
+
+このソフトウェアは未完成です。それでも再利用したい場合は、私に連絡してください。大歓迎です。
