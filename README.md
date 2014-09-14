@@ -3,7 +3,7 @@ tungate
 
 L2TP/DHCPv6 access concentrator and client
 
-For the present README is in Japanese. Feel free to mail me in English. I can use English a little. :)
+For the present README is almost in Japanese. Feel free to mail me in English. I can use English a little. :)
 
 tungate は、IPv6 を L2TP 経由でばらまくためのシステムです。サーバ側も、クライアント側も開発しています。
 
@@ -43,3 +43,11 @@ Copyright
 ---------
 
 Copyright © SATO Taisuke <<paina@paina.jp>> 2014
+
+License is not fixed yet...
+
+This software has not been not completed. If you want reuse it nevertheless, please contact me. It's very very welcomed.
+
+ライセンスはまだ確定していません。
+
+このソフトウェアは未完成です。それでも再利用したい場合は、私に連絡してください。大歓迎です。
